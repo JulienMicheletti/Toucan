@@ -1,0 +1,6 @@
+int i = 6 ;
+tab[6-1] = tab[i-5*1] ;
+int variable = tab[5+1] ;
+i = tab[variable-25] ;
+tab[v-7+3-(var-i)*i] = (i + 12) * 2 ;
+int j = 25 - i + 3 ;

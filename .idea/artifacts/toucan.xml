@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="toucan">
+    <output-path>D:/</output-path>
+    <root id="archive" name="toucan.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="toucan4" />
+    </root>
+  </artifact>
+</component>

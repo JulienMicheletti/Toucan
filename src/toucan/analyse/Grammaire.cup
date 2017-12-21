@@ -1,0 +1,132 @@
+package toucan.analyse ;
+import java_cup.runtime.*;
+import toucan.arbre.*;
+import toucan.modele.exceptions.*;
+
+action code {: /* vide pour le moment */
+	    :} ;
+
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+    /* Change the method report_fatal_error so when it reports a fatal error it will display the
+       line and column number of where the fatal error occurred in the input as well as the reason
+       for the fatal error which is passed into the method in the object 'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) throws Exception{
+        /* Create a StringBuffer called 'm' with the string 'Error' in it. */
+                StringBuffer m = new StringBuffer("Error");
+
+                /* Check if the information passed to the method is the same type as the type
+                   java_cup.runtime.Symbol. */
+                if (info instanceof java_cup.runtime.Symbol) {
+                    /* Declare a java_cup.runtime.Symbol object 's' with the information in the object
+                       info that is being typecasted as a java_cup.runtime.Symbol object. */
+                    java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+
+                    /* Check if the line number in the input is greater or equal to zero. */
+                    if (s.left >= 0) {
+                        /* Add to the end of the StringBuffer error message the line number of the error
+                           in the input. */
+                        m.append(" in line "+(s.left+1));
+                        /* Check if the column number in the input is greater or equal to zero. */
+                        if (s.right >= 0)
+                            /* Add to the end of the StringBuffer error message the column number of the
+                               error in the input. */
+                            m.append(", column "+(s.right+1));
+                    }
+                }
+                /* Add to the end of the StringBuffer error message created in this method the message that
+                   was passed into this method. */
+                m.append(" : "+message);
+                throw new Exception(m.toString());
+    }
+:};
+/* ------------Declaration of Terminals and Non Terminals Section----------- */
+/* Terminals (tokens returned by the scanner).  
+   Terminals that have no value are listed first and then terminals that do have a value, in this 
+   case a String value, are listed on the next line down. */
+
+terminal Symbol    POINTVIRGULE, CROOUV, CROFER, EGAL , PAROUV, PARFER;
+terminal String    TYPEPRIMITIF, IDF, CSTE, TAB, OP;
+
+/* Non terminals used in the grammar section.  
+   Non terminals that have an object value are listed first and then non terminals that have an 
+   integer value are listed.  An object value means that it can be any type, it isn't set to a 
+   specific type.  So it could be an Integer or a String or whatever. */
+
+non terminal BlocDInstructions	PROG, LINST;
+non terminal Instruction DECL, INST, AFF;
+non terminal String EXP, INDICE;
+
+precedence left OP;
+/* ----------------------------Grammar Section-------------------- */
+
+start with PROG ;
+
+PROG ::= LINST:li
+		{: RESULT = li; :}
+		;
+
+LINST ::= LINST:li INST:i
+        {:  li.ajouter(i);
+            RESULT = li;
+        :}
+    | INST:i
+        {:  BlocDInstructions li = new BlocDInstructions();
+            li.ajouter(i);
+            RESULT = li;
+        :}
+    ;
+
+INST ::= DECL:d POINTVIRGULE
+        {: RESULT = d; :}
+    | AFF:a POINTVIRGULE
+        {: RESULT = a; :}
+    ;
+
+DECL	::=	TYPEPRIMITIF:t IDF:i
+		{:  Code code = new Code(t + " " + i);
+		    RESULT = code;
+		:}
+		| TYPEPRIMITIF:t IDF:i EGAL EXP:e
+		{:  Code code = new Code(t + " " + i + " = " + e);
+		    RESULT = code;
+		:}
+		| TYPEPRIMITIF:t IDF:i EGAL TAB CROOUV INDICE:j CROFER
+		{:  AffectCaseVar acv = new AffectCaseVar(j, i);
+            Code code = new Code(t + " " + i + ";\n" + acv.getCodeDecore());
+            RESULT = code;
+		:}
+		;
+
+AFF ::= TAB CROOUV INDICE:i CROFER EGAL TAB CROOUV INDICE:j CROFER
+        {: AffectCaseCase acc = new AffectCaseCase(i, j);
+           RESULT = acc;
+        :}
+    | TAB CROOUV INDICE:i CROFER EGAL EXP:e
+        {:  AffectVarCase avc = new AffectVarCase(i, e);
+            RESULT = avc;
+        :}
+    | IDF:j EGAL TAB CROOUV INDICE:i CROFER
+        {:  AffectCaseVar acv = new AffectCaseVar(i, j);
+            RESULT = acv;
+        :}
+    | IDF:i EGAL EXP:e
+        {:  Code code = new Code(i + "=" + e);
+            RESULT = code;
+        :}
+    ;
+
+EXP ::= EXP:e1 OP:o EXP:e2
+        {: RESULT = e1 + " " + o + " " + e2; :}
+    | PAROUV EXP:e PARFER
+        {: RESULT = "(" + e + ")"; :}
+    | CSTE:c
+        {: RESULT = c; :}
+    | IDF:i
+        {: RESULT = i; :}
+    ;
+
+INDICE ::= EXP:e
+    {: RESULT = e; :}
+    ;

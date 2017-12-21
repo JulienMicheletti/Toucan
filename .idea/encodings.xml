@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/toucan/graphique/CaseAnimation.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/toucan/modele/cases/Case.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/toucan/modele/mouvement/LesMouvements.java" charset="ISO-8859-1" />
+  </component>
+</project>
